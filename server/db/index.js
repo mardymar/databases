@@ -7,6 +7,11 @@ var mysql = require('mysql');
 
 exports.con = mysql.createConnection({
   user: "root",
-  password: "",
+  password: "plantlife",
   database: "chat"
+});
+
+exports.connection = exports.con.connect(function(err) {
+  if(err) throw err;
+  console.log('Connected to database');
 });

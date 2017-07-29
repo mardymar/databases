@@ -1,17 +1,35 @@
 var models = require('../models');
+var Promise = require('bluebird');
+var db = require('../db/index.js');
+
+var objectIdIndex = 1;
 
 module.exports = {
   messages: {
     get: function (req, res) {
-      console.log('messages get')
+      //console.log('messages get')
       var headers = defaultCorsHeaders;
       headers['Content-Type'] = 'application/json';
       res.writeHead(200, headers);
-      Promise.promisify(models.messages.get);
 
-      models.messages.get().then(function(messages){
-        res.end(messages);
-      })
+
+      models.messages.get(function(messages){
+
+        var stringify = JSON.stringify(messages);
+        console.log(messages, stringify);
+
+        var obj = {};
+        obj.results = [];
+
+        messages.forEach(function(message){
+          obj.results.push(message);
+        })
+
+        console.log(obj);
+
+        res.end(JSON.stringify(obj));
+      });
+
 
     }, // a function which handles a get request for all messages
     post: function (req, res) {
@@ -29,11 +47,10 @@ module.exports = {
       req.on('end', function () {
         data = JSON.parse(chunk);
         data.objectId = ++objectIdIndex;
-        Promise.promisify(models.messages.post);
 
-        models.messages.post(data).then(function(messages){
-          res.end(messages);
-        })
+        models.messages.post(data, function(messages){
+          res.end(JSON.stringify(messages));
+        });
       });
     } // a function which handles posting a message to the database
   },
@@ -45,11 +62,10 @@ module.exports = {
       var headers = defaultCorsHeaders;
       headers['Content-Type'] = 'application/json';
       res.writeHead(200, headers);
-      Promise.promisify(models.users.get);
 
-      models.messages.get().then(function(users){
-        res.end(users);
-      })
+      models.messages.get(function(users){
+        res.end(JSON.stringify(users));
+      });
     },
     post: function (req, res) {
         console.log('users post')
@@ -65,10 +81,9 @@ module.exports = {
       req.on('end', function () {
         data = JSON.parse(chunk);
         data.objectId = ++objectIdIndex;
-        Promise.promisify(models.users.post);
 
-        models.users.post(data).then(function(user){
-          res.end(user);
+        models.users.post(data, function(user){
+          res.end(JSON.stringify(user));
         })
       });
      // a function which handles posting a message to the database
